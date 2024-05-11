@@ -33,8 +33,11 @@ let rec triang (n:nat) : int =
 // 101 + 101 + ... + 101 = 101 * 100
 // suma = 101 * 100 / 2 = 5050
 (* https://en.wikipedia.org/wiki/Arithmetic_progression#History *)
-let gauss (n:nat) : Lemma (triang n == n * (1 + n) / 2) =
-  admit()
+let rec gauss (n:nat) : Lemma (triang n == n * (1 + n) / 2) =
+  if n = 0 then
+    ()
+  else
+    gauss (n - 1)
 
 let rec fib (x:nat) : nat =
   if x = 0 then 1
@@ -42,16 +45,19 @@ let rec fib (x:nat) : nat =
   else fib (x - 1) + fib (x - 2)
 
 (* Fibonacci en tiempo lineal *)
-let rec fib_lin' (x:nat) : (int & int) =
+let rec fib_lin' (x:nat) : (nat & nat) =
   if x = 0 then (1, 1)
    else
       let (a, b) = fib_lin' (x - 1) in
       (b, a + b)
-let fib_lin (n:nat) : int = fst (fib_lin' n)
+let fib_lin (n:nat) : nat = fst (fib_lin' n)
 
 (* Demuestre que es correcta. *)
-let fib_lin_ok (n:nat) : Lemma (fib_lin n == fib n) =
-  admit()
+let rec fib_lin_ok (n:nat) : Lemma (fib_lin n == fib n) =
+  if n < 2 then ()
+  else
+    (fib_lin_ok (n - 1);
+    fib_lin_ok (n - 2))
 
 (* Fibonacci en tiempo lineal con recursión de cola (esencialmente
 un bucle while). *)
@@ -60,7 +66,10 @@ let rec fib_tail' (a b : nat) (n : nat) : Tot nat (decreases n) =
   else fib_tail' b (a + b) (n - 1)
 let fib_tail (n:nat) : nat = fib_tail' 1 1 n
 
+let rec fib_tail'_fib (n : nat) (a : nat) : Lemma (fib_tail' (fib a) (fib (a + 1)) n == fib (a + n)) =
+  if n = 0 then ()
+  else fib_tail'_fib (n - 1) (a + 1)
+
 (* Demuestre que es correcta. Va a necesitar un lema auxiliar para fib_tail'. *)
 let fib_tail_ok (n:nat) : Lemma (fib_tail n == fib n) =
-  admit()
-
+  fib_tail'_fib n 0
